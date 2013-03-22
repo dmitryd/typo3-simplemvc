@@ -43,7 +43,7 @@ abstract class AbstractView {
 	 *
 	 * @param \DmitryDulepov\Simplemvc\Controller\AbstractController $controller
 	 */
-	public function __constract(\DmitryDulepov\Simplemvc\Controller\AbstractController $controller) {
+	public function __construct(\DmitryDulepov\Simplemvc\Controller\AbstractController $controller) {
 		$this->controller = $controller;
 	}
 
