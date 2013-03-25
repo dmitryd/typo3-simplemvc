@@ -28,6 +28,40 @@
  * @author	Dmitry Dulepov <dmitry.dulepov@gmail.com>
  * @package	tx_simplemvc
  * @subpackage	models
+ *
+ * @method getAddress
+ * @method setAddress
+ * @method getCity
+ * @method setCity
+ * @method getCompany
+ * @method setCompany
+ * @method getCountry
+ * @method setCountry
+ * @method isDisable
+ * @method setDisable
+ * @method getEmail
+ * @method setEmail
+ * @method getFirstName
+ * @method setFirstName
+ * @method getLastName
+ * @method setLastName
+ * @method setPassword
+ * @method getStaticInfoCountry
+ * @method setStaticInfoCountry
+ * @method getTelephone
+ * @method setTelephone
+ * @method getTitle
+ * @method setTitle
+ * @method getUsergroup
+ * @method setUsergroup
+ * @method getUsername
+ * @method setUsername
+ * @method getWww
+ * @method setWww
+ * @method getZip
+ * @method setZip
+ * @method getZone
+ * @method setZone
  */
 class tx_simplemvc_feuser extends tx_simplemvc_abstractmodel {
 
