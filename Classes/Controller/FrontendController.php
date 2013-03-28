@@ -76,7 +76,7 @@ class FrontendController extends AbstractController {
 	}
 
 	/**
-	 * Obtains CSRF token for the next forum request.
+	 * Obtains CSRF token for the next request.
 	 *
 	 * @return string
 	 */
