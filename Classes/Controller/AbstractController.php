@@ -168,6 +168,30 @@ abstract class AbstractController {
 	}
 
 	/**
+	 * Obtains a reference to the LanguageService object.
+	 *
+	 * @return \TYPO3\CMS\Lang\LanguageService
+	 */
+	public function getLanguageService() {
+		return $this->languageService;
+	}
+
+	/**
+	 * Obtains a string from the language file
+	 *
+	 * @param string $index
+	 * @param boolean $hsc htmlspecialchars flag
+	 * @return string
+	 */
+	public function getLL($index, $hsc = true) {
+		$label = isset($this->languageLabels[$index]) ? $this->languageLabels[$index] : '';
+		if ($hsc) {
+			$label = htmlspecialchars($label);
+		}
+		return $label;
+	}
+
+	/**
 	 * Obtains a parameter from the POST parameters.
 	 *
 	 * @param	string	$name	Parameter name
@@ -276,7 +300,7 @@ abstract class AbstractController {
 	 * @param string $tableName
 	 * @return string
 	 */
-	public function renderTSObject($tsPath, array $data = NULL, $tableName = '_NO_TABLE') {
+	public function renderTSObject($tsPath, array $data = null, $tableName = '_NO_TABLE') {
 		if ($tsPath{0} == '.') {
 			$tsPath = substr($tsPath, 1);
 			$tsType = $this->getConfigurationValue($tsPath, '');
