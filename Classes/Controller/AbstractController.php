@@ -225,6 +225,19 @@ abstract class AbstractController {
 	}
 
 	/**
+	 * Checks if the current POST request contains valid reCaptcha.
+	 *
+	 * @return boolean
+	 */
+	public function getReCaptchaFields() {
+		if (!function_exists('recaptcha_get_html')) {
+			require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
+		}
+		$publicKey = $this->getConfigurationValue('simplemvc.reCaptcha.publicKey');
+		return recaptcha_get_html($publicKey);
+	}
+
+	/**
 	 * Implodes parameter for URL
 	 *
 	 * @param string $parameterList
@@ -264,6 +277,24 @@ abstract class AbstractController {
 	 */
 	public function isUserLoggedIn() {
 		return (is_object($GLOBALS['TSFE']) && $GLOBALS['TSFE']->fe_user->user['uid']);
+	}
+
+	/**
+	 * Checks if the current POST request contains valid reCaptcha.
+	 *
+	 * @return boolean
+	 */
+	public function isValidReCaptcha() {
+		if (!function_exists('recaptcha_check_answer')) {
+			require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
+		}
+		$privateKey = $this->getConfigurationValue('simplemvc.reCaptcha.privateKey');
+		$response = recaptcha_check_answer($privateKey,
+			$_SERVER['REMOTE_ADDR'],
+			$_POST['recaptcha_challenge_field'],
+			$_POST['recaptcha_response_field']
+		);
+		return $response->is_valid;
 	}
 
 	/**
