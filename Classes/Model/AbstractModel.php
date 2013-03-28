@@ -91,6 +91,22 @@ abstract class AbstractModel {
 	static protected $className = __CLASS__;
 
 	/**
+	 * Cache timeout in seconds.
+	 *
+	 * @var int
+	 */
+	protected $cacheTimeout = 300;
+
+	/**
+	 * Enables cache for records (if necessary). Must be set before the
+	 * constructor is called. At the moment uses APC cache without TYPO3
+	 * caching framework.
+	 *
+	 * @var bool
+	 */
+	static protected $enableCache = false;
+
+	/**
 	 * Maps some fields to object types. For example, calling "getAlbum()"
 	 * would cause "tx_myext_album" returned if the following is set in the
 	 * map:
@@ -113,23 +129,6 @@ abstract class AbstractModel {
 	 */
 	protected $permalinkTSPath = '';
 
-	/**
-	 * Enables cache for records (if necessary). Must be set before the
-	 * constructor is called. At the moment uses APC cache without TYPO3
-	 * caching framework.
-	 *
-	 * @var bool
-	 */
-	static protected $enableCache = false;
-
-	/**
-	 * Cache timeout in seconds.
-	 *
-	 * @var int
-	 */
-	protected $cacheTimeout = 300;
-
-
 	//==========================================================================
 	// Implementation follows. Do not use any of these attributes in your
 	// classes or you risk being screwed!
@@ -142,13 +141,6 @@ abstract class AbstractModel {
 	 * @var array
 	 */
 	protected $additionalCacheKeys = array();
-
-	/**
-	 * CAS token for this instance.
-	 *
-	 * @var float
-	 */
-	private $casToken = null;
 
 	/**
 	 * Current data row. Do not use this directly.
@@ -212,6 +204,131 @@ abstract class AbstractModel {
 		else {
 			$this->originalRow = $this->currentRow = array();
 		}
+	}
+
+	/**
+	 * Clears the cache for this model instance.
+	 *
+	 * @return void
+	 */
+	public function clearCache() {
+		if (static::$enableCache) {
+/* TODO Implement
+			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_simplemvc_cache');
+			$cacheKey = $cache->getCacheKey(get_class($this), $this->getId());
+			$cache->remove($cacheKey);
+			foreach ($this->additionalCacheKeys as $cacheKey) {
+				$cache->remove($cacheKey);
+			}
+*/
+		}
+	}
+
+	/**
+	 * Deletes the current record
+	 *
+	 * @param bool $forceDatabaseDelete
+	 * @return void
+	 */
+	public function delete($forceDatabaseDelete = false) {
+		if ($this->currentRow['uid']) {
+			$forceDatabaseDelete |= !isset($GLOBALS['TCA'][static::$tableName]['ctrl']['delete']);
+
+			$class = get_class($this);
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['canDelete'][$class])) {
+				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['canDelete'][$class] as $hook) {
+					 $parameters = array(
+						 'instance' => $this,
+						 'soft' => !$forceDatabaseDelete,
+						 'result' => true
+					 );
+					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+					 if (!$parameters['result']) {
+						 return;
+					 }
+				 }
+			}
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preDelete'][$class])) {
+				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preDelete'][$class] as $hook) {
+					 $parameters = array(
+						 'instance' => $this,
+						 'soft' => !$forceDatabaseDelete,
+					 );
+					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+				 }
+			}
+
+ 			if ($forceDatabaseDelete) {
+				/** @noinspection PhpUndefinedMethodInspection */
+				$GLOBALS['TYPO3_DB']->exec_DELETEquery(static::$tableName,
+					'uid=' . intval($this->currentRow['uid']));
+			}
+			else {
+				$parameters = array(
+					$GLOBALS['TCA'][static::$tableName]['ctrl']['delete'] => 1
+				);
+				if (isset($GLOBALS['TCA'][static::$tableName]['ctrl']['tstamp'])) {
+					$parameters[$GLOBALS['TCA'][static::$tableName]['ctrl']['tstamp']] = time();
+				}
+				/** @noinspection PhpUndefinedMethodInspection */
+				$GLOBALS['TYPO3_DB']->exec_UPDATEquery(static::$tableName,
+					'uid=' . intval($this->currentRow['uid']), $parameters);
+			}
+
+			$this->isDeletedInstance = true;
+
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postDelete'][$class])) {
+				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postDelete'][$class] as $hook) {
+					 $parameters = array(
+						 'instance' => $this,
+						 'soft' => !$forceDatabaseDelete
+					 );
+					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+				 }
+			}
+
+			$this->clearCache();
+
+			$this->originalRow = $this->currentRow = array();
+		}
+	}
+
+	/**
+	 * Produces "enableFields" for the table, possibly with alias
+	 *
+	 * @param string $tableName
+	 * @param string $alias
+	 * @return string
+	 */
+	static public function enableFields($tableName, $alias = '') {
+		if (TYPO3_MODE == 'BE') {
+			$enableFields = \TYPO3\CMS\Backend\Utility\BackendUtility::BEenableFields($tableName) .
+				\TYPO3\CMS\Backend\Utility\BackendUtility::deleteClause($tableName);
+		}
+		else {
+			/** @noinspection PhpUndefinedMethodInspection */
+			$enableFields = $GLOBALS['TSFE']->sys_page->enableFields($tableName);
+		}
+		if ($alias != '') {
+			$enableFields = str_replace($tableName . '.', $alias . '.', $enableFields);
+		}
+		return $enableFields;
+	}
+
+	/**
+	 * Produces "enableFields" for the table, possibly with alias, without
+	 * leading ' AND '
+	 *
+	 * @param string $tableName
+	 * @param string $alias
+	 * @return string
+	 */
+	static public function enableFieldsClean($tableName, $alias = '') {
+		$enableFields = trim(self::enableFields($tableName, $alias));
+		if ($enableFields) {
+			$enableFields = trim(substr($enableFields, 3));
+		}
+		return $enableFields;
 	}
 
 	/**
@@ -396,7 +513,7 @@ abstract class AbstractModel {
 	public function getPermalink() {
 		$result = '';
 		if ($this->permalinkTSPath) {
-			$cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tslib_cObj');
+			$cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
 			/** @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $cObj */
 			$cObj->start($this->currentRow, static::$tableName);
 			$tsName = \DmitryDulepov\Simplemvc\Controller\AbstractController::getConfigurationValueFromArray($GLOBALS['TSFE']->tmpl->setup, $this->permalinkTSPath, '');
@@ -459,263 +576,6 @@ abstract class AbstractModel {
 	}
 
 	/**
-	 * Gets or sets the value of the model.
-	 *
-	 * @param string $name
-	 * @param array $arguments
-	 * @return mixed Depends on the function name
-	 * @internal Internal use only!
-	 */
-	public function __call($name, array $arguments) {
-		$methodPrefix = substr($name, 0, 3);
-		if ($methodPrefix === 'get') {
-			return $this->getAttributeValue($this->getAttributeName(substr($name, 3)));
-		}
-		elseif (substr($name, 0, 2) === 'is') {
-			return (boolean)$this->getAttributeValue($this->getAttributeName(substr($name, 2)));
-		}
-		elseif ($methodPrefix === 'set') {
-			if (count($arguments) !== 1) {
-				throw new \Exception(sprintf('Wrong parameter count to %s::%s()',
-					get_class($this), $name
-				));
-			}
-			if ($arguments[0] instanceof AbstractModel) {
-				$this->setObjectValue(substr($name, 3), $arguments[0]);
-			}
-			else {
-				switch (gettype($arguments[0])) {
-					case 'object':
-					case 'array':
-						$value = serialize($arguments[0]);
-						break;
-					case 'boolean':
-						$value = $arguments[0] ? 1 : 0;
-						break;
-					default:
-						$value = $arguments[0];
-				}
-				$this->setAttributeValue($this->getAttributeName(substr($name, 3)), $value);
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Deletes the current record
-	 *
-	 * @param bool $forceDatabaseDelete
-	 * @return void
-	 */
-	public function delete($forceDatabaseDelete = false) {
-		if ($this->currentRow['uid']) {
-			$forceDatabaseDelete |= !isset($GLOBALS['TCA'][static::$tableName]['ctrl']['delete']);
-
-			$class = get_class($this);
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['canDelete'][$class])) {
-				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['canDelete'][$class] as $hook) {
-					 $parameters = array(
-						 'instance' => $this,
-						 'soft' => !$forceDatabaseDelete,
-						 'result' => true
-					 );
-					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-					 if (!$parameters['result']) {
-						 return;
-					 }
-				 }
-			}
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preDelete'][$class])) {
-				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preDelete'][$class] as $hook) {
-					 $parameters = array(
-						 'instance' => $this,
-						 'soft' => !$forceDatabaseDelete,
-					 );
-					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-				 }
-			}
-
- 			if ($forceDatabaseDelete) {
-				/** @noinspection PhpUndefinedMethodInspection */
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery(static::$tableName,
-					'uid=' . intval($this->currentRow['uid']));
-			}
-			else {
-				$parameters = array(
-					$GLOBALS['TCA'][static::$tableName]['ctrl']['delete'] => 1
-				);
-				if (isset($GLOBALS['TCA'][static::$tableName]['ctrl']['tstamp'])) {
-					$parameters[$GLOBALS['TCA'][static::$tableName]['ctrl']['tstamp']] = time();
-				}
-				/** @noinspection PhpUndefinedMethodInspection */
-				$GLOBALS['TYPO3_DB']->exec_UPDATEquery(static::$tableName,
-					'uid=' . intval($this->currentRow['uid']), $parameters);
-			}
-
-			$this->isDeletedInstance = true;
-
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postDelete'][$class])) {
-				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postDelete'][$class] as $hook) {
-					 $parameters = array(
-						 'instance' => $this,
-						 'soft' => !$forceDatabaseDelete
-					 );
-					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-				 }
-			}
-
-			$this->clearCache();
-
-			$this->originalRow = $this->currentRow = array();
-		}
-	}
-
-	/**
-	 * Produces "enableFields" for the table, possibly with alias
-	 *
-	 * @param string $tableName
-	 * @param string $alias
-	 * @return string
-	 */
-	static public function enableFields($tableName, $alias = '') {
-		if (TYPO3_MODE == 'BE') {
-			$enableFields = \TYPO3\CMS\Backend\Utility\BackendUtility::BEenableFields($tableName) .
-				\TYPO3\CMS\Backend\Utility\BackendUtility::deleteClause($tableName);
-		}
-		else {
-			/** @noinspection PhpUndefinedMethodInspection */
-			$enableFields = $GLOBALS['TSFE']->sys_page->enableFields($tableName);
-		}
-		if ($alias != '') {
-			$enableFields = str_replace($tableName . '.', $alias . '.', $enableFields);
-		}
-		return $enableFields;
-	}
-
-	/**
-	 * Indicates if instance is deleted. This is usable when working in delete hooks.
-	 *
-	 * @return bool
-	 */
-	public function isDeleted() {
-		return $this->isDeletedInstance;
-	}
-
-	/**
-	 * Caches this instance.
-	 *
-	 * @return void
-	 */
-	protected function cacheMe() {
-		if (static::$enableCache) {
-/* TODO Implement
-			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_simplemvc_cache');
-			$cacheKey = $cache->getCacheKey(get_class($this), $this->getId());
-			$cache->set($cacheKey, $this, $this->cacheTimeout, $this->casToken);
-*/
-		}
-	}
-
-	/**
-	 * Produces "enableFields" for the table, possibly with alias, without
-	 * leading ' AND '
-	 *
-	 * @param string $tableName
-	 * @param string $alias
-	 * @return string
-	 */
-	static public function enableFieldsClean($tableName, $alias = '') {
-		$enableFields = trim(self::enableFields($tableName, $alias));
-		if ($enableFields) {
-			$enableFields = trim(substr($enableFields, 3));
-		}
-		return $enableFields;
-	}
-
-	/**
-	 * Converts method name to the attribute name. TxWhateverName becomes
-	 * tx_whatever_name.
-	 *
-	 * @param string $methodName
-	 * @return string
-	 */
-	protected function getAttributeName($methodName) {
-		$hasUnderscore = ($methodName{0} === '_');
-		if ($hasUnderscore) {
-			$methodName = substr($methodName, 1);
-		}
-		$attributeName = preg_replace('/[A-Z]/e', 'tx_simplemvc_model_convertForName(\'\\0\')', $methodName);
-		if (!$hasUnderscore) {
-			$attributeName = substr($attributeName, 1);
-		}
-		return $attributeName;
-	}
-
-	/**
-	 * Obtains sorting for the table (just fields, no ORDER BY). This function
-	 * can be redeclared in the derieved class despite being static.
-	 *
-	 * @param string $tableName
-	 * @return string
-	 */
-	static protected function getSortingForTable($tableName) {
-		$sorting = '';
-		if (isset($GLOBALS['TCA'][$tableName]['ctrl']['default_sortby'])) {
-			$sorting = substr($GLOBALS['TCA'][$tableName]['ctrl']['default_sortby'], 9);
-		}
-		elseif (isset($GLOBALS['TCA'][$tableName]['ctrl']['sortby'])) {
-			$sorting = $GLOBALS['TCA'][$tableName]['ctrl']['sortby'];
-		}
-
-		return $sorting;
-	}
-
-	/**
-	 * Clears the cache for this model instance.
-	 *
-	 * @return void
-	 */
-	public function clearCache() {
-		if (static::$enableCache) {
-/* TODO Implement
-			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_simplemvc_cache');
-			$cacheKey = $cache->getCacheKey(get_class($this), $this->getId());
-			$cache->remove($cacheKey);
-			foreach ($this->additionalCacheKeys as $cacheKey) {
-				$cache->remove($cacheKey);
-			}
-*/
-		}
-	}
-
-	/**
-	 * Obtains attribute value
-	 *
-	 * @param string $attributeName Attribute name
-	 * @return mixed Attribute value
-	 * @internal Internal use only!
-	 */
-	private function getAttributeValue($attributeName) {
-		$result = null;
-		if (isset($this->fieldToObjectMap[$attributeName])) {
-			// Getting the object
-			$id = intval($this->currentRow[$attributeName . '_id']);
-			if ($id) {
-				if (isset($this->objectCache[$attributeName])) {
-					$result = $this->objectCache[$attributeName];
-				}
-				else {
-					$this->objectCache[$attributeName] = $result = self::getById($id, $this->fieldToObjectMap[$attributeName]);
-				}
-			}
-		}
-		else {
-			$result = $this->currentRow[$attributeName];
-		}
-		return $result;
-	}
-
-	/**
 	 * Retrieves id of the record
 	 *
 	 * @return	int	ID
@@ -740,6 +600,15 @@ abstract class AbstractModel {
 	 */
 	public function hasRecord() {
 		return isset($this->currentRow['uid']);
+	}
+
+	/**
+	 * Indicates if instance is deleted. This is usable when working in delete hooks.
+	 *
+	 * @return bool
+	 */
+	public function isDeleted() {
+		return $this->isDeletedInstance;
 	}
 
 	/**
@@ -836,6 +705,139 @@ abstract class AbstractModel {
 	}
 
 	/**
+	 * Sets a new pid for the record
+	 *
+	 * @param	int	$pid	Page id of the record
+	 * @return	void
+	 */
+	public function setPid($pid) {
+		$this->currentRow['pid'] = intval($pid);
+	}
+
+	/**
+	 * Gets or sets the value of the model.
+	 *
+	 * @param string $name
+	 * @param array $arguments
+	 * @return mixed Depends on the function name
+	 * @internal Internal use only!
+	 */
+	public function __call($name, array $arguments) {
+		$methodPrefix = substr($name, 0, 3);
+		if ($methodPrefix === 'get') {
+			return $this->getAttributeValue($this->getAttributeName(substr($name, 3)));
+		}
+		elseif (substr($name, 0, 2) === 'is') {
+			return (boolean)$this->getAttributeValue($this->getAttributeName(substr($name, 2)));
+		}
+		elseif ($methodPrefix === 'set') {
+			if (count($arguments) !== 1) {
+				throw new \Exception(sprintf('Wrong parameter count to %s::%s()',
+					get_class($this), $name
+				));
+			}
+			if ($arguments[0] instanceof AbstractModel) {
+				$this->setObjectValue(substr($name, 3), $arguments[0]);
+			}
+			else {
+				switch (gettype($arguments[0])) {
+					case 'object':
+					case 'array':
+						$value = serialize($arguments[0]);
+						break;
+					case 'boolean':
+						$value = $arguments[0] ? 1 : 0;
+						break;
+					default:
+						$value = $arguments[0];
+				}
+				$this->setAttributeValue($this->getAttributeName(substr($name, 3)), $value);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Caches this instance.
+	 *
+	 * @return void
+	 */
+	protected function cacheMe() {
+		if (static::$enableCache) {
+/* TODO Implement
+			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_simplemvc_cache');
+			$cacheKey = $cache->getCacheKey(get_class($this), $this->getId());
+			$cache->set($cacheKey, $this, $this->cacheTimeout, $this->casToken);
+*/
+		}
+	}
+
+	/**
+	 * Converts method name to the attribute name. TxWhateverName becomes
+	 * tx_whatever_name.
+	 *
+	 * @param string $methodName
+	 * @return string
+	 */
+	protected function getAttributeName($methodName) {
+		$hasUnderscore = ($methodName{0} === '_');
+		if ($hasUnderscore) {
+			$methodName = substr($methodName, 1);
+		}
+		$attributeName = preg_replace('/[A-Z]/e', 'tx_simplemvc_model_convertForName(\'\\0\')', $methodName);
+		if (!$hasUnderscore) {
+			$attributeName = substr($attributeName, 1);
+		}
+		return $attributeName;
+	}
+
+	/**
+	 * Obtains sorting for the table (just fields, no ORDER BY). This function
+	 * can be redeclared in the derieved class despite being static.
+	 *
+	 * @param string $tableName
+	 * @return string
+	 */
+	static protected function getSortingForTable($tableName) {
+		$sorting = '';
+		if (isset($GLOBALS['TCA'][$tableName]['ctrl']['default_sortby'])) {
+			$sorting = substr($GLOBALS['TCA'][$tableName]['ctrl']['default_sortby'], 9);
+		}
+		elseif (isset($GLOBALS['TCA'][$tableName]['ctrl']['sortby'])) {
+			$sorting = $GLOBALS['TCA'][$tableName]['ctrl']['sortby'];
+		}
+
+		return $sorting;
+	}
+
+	/**
+	 * Obtains attribute value
+	 *
+	 * @param string $attributeName Attribute name
+	 * @return mixed Attribute value
+	 * @internal Internal use only!
+	 */
+	private function getAttributeValue($attributeName) {
+		$result = null;
+		if (isset($this->fieldToObjectMap[$attributeName])) {
+			// Getting the object
+			$id = intval($this->currentRow[$attributeName . '_id']);
+			if ($id) {
+				if (isset($this->objectCache[$attributeName])) {
+					$result = $this->objectCache[$attributeName];
+				}
+				else {
+					$this->objectCache[$attributeName] = $result = self::getById($id, $this->fieldToObjectMap[$attributeName]);
+				}
+			}
+		}
+		else {
+			$result = $this->currentRow[$attributeName];
+		}
+		return $result;
+	}
+
+	/**
 	 * Sets attribute value
 	 *
 	 * @param string $attributeName Attribute name
@@ -888,16 +890,6 @@ abstract class AbstractModel {
 		}
 
 		$this->currentRow[$attributeName] = $attributeValue;
-	}
-
-	/**
-	 * Sets a new pid for the record
-	 *
-	 * @param	int	$pid	Page id of the record
-	 * @return	void
-	 */
-	public function setPid($pid) {
-		$this->currentRow['pid'] = intval($pid);
 	}
 }
 
