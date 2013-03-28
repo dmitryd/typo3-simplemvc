@@ -36,5 +36,5 @@ return array(
 	'DmitryDulepov\\Simplemvc\\Model\\AbstractModel' => $extPath . 'Classes/Model/AbstractModel.php',
 
 	// Views
-	'DmitryDulepov\\Simplemvc\\View\\AbstractView' => $extPath . 'Classes/Model/AbstractView.php',
+	'DmitryDulepov\\Simplemvc\\View\\AbstractView' => $extPath . 'Classes/View/AbstractView.php',
 );
