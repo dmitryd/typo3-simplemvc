@@ -35,6 +35,13 @@ namespace DmitryDulepov\Simplemvc\Controller;
 class FrontendController extends AbstractController {
 
 	/**
+	 * Set to true to require cHash check for USER objects
+	 *
+	 * @var bool
+	 */
+	protected $requireChash = false;
+
+	/**
 	 * Initializes the instance
 	 *
 	 * @param array $configuration
@@ -44,6 +51,45 @@ class FrontendController extends AbstractController {
 		parent::init($configuration);
 
 		$this->mergeFlexform();
+	}
+
+	/**
+	 * Main dispatching function of the class
+	 *
+	 * @param string $unused Unused
+	 * @param array $configuration Plugin configuration
+	 * @return string
+	 */
+	public function main($unused, array $configuration) {
+		$this->init($configuration);
+
+		if ($this->requireChash) {
+			if ($this->cObj->getUserObjectType() == \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer::OBJECTTYPE_USER) {
+				$GLOBALS['TSFE']->reqCHash();
+			}
+			else {
+				// Reset in case of INT object
+				$this->requireChash = false;
+			}
+		}
+
+		$content = $this->dispatch();
+		$content = $this->cleanContent($content);
+
+		return $content;
+	}
+
+	/**
+	 * Cleans up the output.
+	 *
+	 * @param string $content
+	 * @return string
+	 */
+	private function cleanContent($content) {
+		// Remove subpart markers
+		$content = preg_replace('/<!--\s*###[a-z0-9_]+###\s*(?:begin|end)\s*-->/i', '', $content);
+
+		return $content;
 	}
 
 	/**
