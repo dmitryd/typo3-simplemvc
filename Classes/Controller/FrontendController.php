@@ -34,6 +34,8 @@ namespace DmitryDulepov\Simplemvc\Controller;
  */
 class FrontendController extends AbstractController {
 
+	protected $csrfTokenName = null;
+
 	/**
 	 * Set to true to require cHash check for USER objects
 	 *
@@ -51,6 +53,42 @@ class FrontendController extends AbstractController {
 		parent::init($configuration);
 
 		$this->mergeFlexform();
+	}
+
+	/**
+	 * Checks if CSRF token is valid.
+	 *
+	 * @return bool
+	 */
+	public function checkCsrfToken() {
+		if (!$this->csrfTokenName) {
+			throw new \Exception('csrfTokenName must not be null if you use CSRF protection in the controller', 1364482988);
+		}
+		if (!is_array($_SESSION)) {
+			session_start();
+		}
+		$token = $_SESSION[$this->csrfTokenName];
+		$validToken = sha1($token);
+		unset($_SESSION[$this->csrfTokenName]);
+
+		$postedToken = $this->getPostParameter('csrf');
+		return $token != '' && $postedToken == $validToken;
+	}
+
+	/**
+	 * Obtains CSRF token for the next forum request.
+	 *
+	 * @return string
+	 */
+	public function getCsrfToken() {
+		if (!$this->csrfTokenName) {
+			throw new \Exception('csrfTokenName must not be null if you use CSRF protection in the controller', 1364483068);
+		}
+		if (!is_array($_SESSION)) {
+			session_start();
+		}
+		$_SESSION[$this->csrfTokenName] = \TYPO3\CMS\Core\Utility\GeneralUtility::getRandomHexString(64);
+		return sha1($_SESSION[$this->csrfTokenName]);
 	}
 
 	/**
