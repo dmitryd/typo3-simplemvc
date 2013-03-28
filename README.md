@@ -19,7 +19,7 @@ No relation whatsoever.
 
 ## Contacts
 
-The extension is created and developed by Dmitry Dulepov with the help of contributors. Current contributor list includes:
+The extension is created and developed by [Dmitry Dulepov](https://github.com/dmitryd) with the help of contributors. Current contributor list includes:
 * [Elmar Hinz](https://github.com/t3elmar)
 
 Contributions are welcome as pull requests. However, please, keep separate commits for each of your changes and make separate pull requests for each of them.
