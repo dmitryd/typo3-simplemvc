@@ -466,7 +466,7 @@ abstract class AbstractController {
 	 */
 	protected function initLanguage() {
 		// Init language
-		$this->languageService = t3lib_div::makeInstance('\\TYPO3\\CMS\\Lang\\LanguageService');
+		$this->languageService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\TYPO3\\CMS\\Lang\\LanguageService');
 		$this->languageService->init($this->tsfeLanguage);
 		$this->loadLanguageFilesFromTS();
 		$this->loadLanguageFiles();
