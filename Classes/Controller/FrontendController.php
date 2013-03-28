@@ -34,6 +34,12 @@ namespace DmitryDulepov\Simplemvc\Controller;
  */
 class FrontendController extends AbstractController {
 
+	/**
+	 * Defines the CSRF token name for this controller. You must define it
+	 * if you want to use CSRF functions of thios class.
+	 *
+	 * @var null|string
+	 */
 	protected $csrfTokenName = null;
 
 	/**
