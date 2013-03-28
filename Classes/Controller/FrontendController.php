@@ -1,7 +1,7 @@
 <?php
 namespace DmitryDulepov\Simplemvc\Controller;
 
-	/***************************************************************
+/***************************************************************
  *  Copyright notice
  *
  *  (c) 2010-2013 Dmitry Dulepov <dmitry.dulepov@gmail.com>
