@@ -512,9 +512,8 @@ abstract class AbstractModel {
 			$forceDatabaseDelete |= !isset($GLOBALS['TCA'][static::$tableName]['ctrl']['delete']);
 
 			$class = get_class($this);
-			// TODO Fix hooks here!
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['canDelete'][$class])) {
-				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['canDelete'][$class] as $hook) {
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['canDelete'][$class])) {
+				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['canDelete'][$class] as $hook) {
 					 $parameters = array(
 						 'instance' => $this,
 						 'soft' => !$forceDatabaseDelete,
@@ -526,8 +525,8 @@ abstract class AbstractModel {
 					 }
 				 }
 			}
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['preDelete'][$class])) {
-				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['preDelete'][$class] as $hook) {
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preDelete'][$class])) {
+				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preDelete'][$class] as $hook) {
 					 $parameters = array(
 						 'instance' => $this,
 						 'soft' => !$forceDatabaseDelete,
@@ -555,8 +554,8 @@ abstract class AbstractModel {
 
 			$this->isDeletedInstance = true;
 
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['postDelete'][$class])) {
-				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['postDelete'][$class] as $hook) {
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postDelete'][$class])) {
+				 foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postDelete'][$class] as $hook) {
 					 $parameters = array(
 						 'instance' => $this,
 						 'soft' => !$forceDatabaseDelete
@@ -758,9 +757,8 @@ abstract class AbstractModel {
 		$dataDiff = array_diff_assoc($this->currentRow, $this->originalRow);
 
 		$class = get_class($this);
-		// TODO Fix hooks
-		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['preSave'][$class])) {
-			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['preSave'][$class] as $hook) {
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preSave'][$class])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['preSave'][$class] as $hook) {
 				$parameters = array(
 					'instance' => $this,
 					'modifiedFieldsList' => array_keys($dataDiff)
@@ -821,9 +819,8 @@ abstract class AbstractModel {
 			}
 			$this->originalRow = $this->currentRow;
 
-			// TODO Fix hooks
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['postSave'][$class])) {
-				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tx_simplemvc_model']['postSave'][$class] as $hook) {
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postSave'][$class])) {
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['DmitryDulepov\\Simplemvc\\Model\\AbstractModel']['postSave'][$class] as $hook) {
 					$parameters = array(
 						'instance' => $this,
 						'modifiedFieldsList' => array_keys($dataDiff),
