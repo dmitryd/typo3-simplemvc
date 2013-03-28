@@ -43,11 +43,14 @@ abstract class AbstractController {
 	 */
 	public $cObj;
 
+	/** @var string */
+	protected $tsfeLanguage;
+
 	/**
 	 * TypoScript configuration array as passed by the calling content object.
 	 * @var array
 	 */
-	private $configuration;
+	protected $configuration;
 
 	/**
 	 * Prefix for URL parameters. If empty, implementation class will be
@@ -56,7 +59,7 @@ abstract class AbstractController {
 	 *
 	 * @var string
 	 */
-	protected $parameterPrefix = NULL;
+	protected $parameterPrefix = null;
 
 	/**
 	 * URL query parameters
@@ -204,7 +207,7 @@ abstract class AbstractController {
 	 * @return string
 	 */
 	public function implodeParametersForURL($parameterList) {
-		$parameterList = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $parameterList, TRUE);
+		$parameterList = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $parameterList, true);
 		$parameters = array();
 		foreach ($parameterList as $parameter) {
 			if (isset($this->mergedParameters[$parameter])) {
@@ -226,9 +229,8 @@ abstract class AbstractController {
 		$this->tsfeLanguage = isset($GLOBALS['TSFE']->config['config']['language']) ?
 			$GLOBALS['TSFE']->config['config']['language'] : 'default';
 
-//		$this->initLanguage();
-//		$this->initCObj();
-		$this->mergeFlexform();
+		$this->initLanguage();
+		$this->initCObj();
 	}
 
 	/**
@@ -272,6 +274,40 @@ abstract class AbstractController {
 	}
 
 	/**
+	 * Adds language labels to the system
+	 *
+	 * @param array $labels
+	 * @return void
+	 */
+	protected function addLanguageLabels(array $labels) {
+		$this->languageLabels = array_merge($this->languageLabels, $labels);
+	}
+
+	/**
+	 * Adds language labels from file to the system
+	 *
+	 * @param string $fileRef
+	 * @return void
+	 */
+	protected function addLanguageLabelsFromFile($fileRef) {
+		$labels = \TYPO3\CMS\Core\Utility\GeneralUtility::readLLfile($fileRef, $this->tsfeLanguage);
+		if (isset($labels[$this->tsfeLanguage])) {
+			$labels['default'] = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($labels['default'], $labels[$this->tsfeLanguage]);
+		}
+		reset($labels['default']);
+		if (is_array(current($labels['default']))) {
+			$fetchedLabels = array();
+			foreach ($labels['default'] as $stringId => $labelArray) {
+				$fetchedLabels[$stringId] = $labelArray[0]['target'];
+			}
+			$this->addLanguageLabels($fetchedLabels);
+		}
+		else {
+			$this->addLanguageLabels($labels['default']);
+		}
+	}
+
+	/**
 	 * Dispatches the request to the action method.
 	 *
 	 * @return string
@@ -311,6 +347,14 @@ abstract class AbstractController {
 	}
 
 	/**
+	 * Initializes $this->cObj.
+	 *
+	 * @return void
+	 */
+	protected function initCObj() {
+	}
+
+	/**
 	 * Initialization action. If returns non-empty string, it will be returned
 	 * instead the action content.
 	 *
@@ -318,6 +362,20 @@ abstract class AbstractController {
 	 */
 	protected function initialize() {
 		return '';
+	}
+
+	/**
+	 * Initializes language support. Requires TSFE.
+	 *
+	 * @return void
+	 */
+	protected function initLanguage() {
+		// Init language
+		$this->languageService = t3lib_div::makeInstance('\\TYPO3\\CMS\\Lang\\LanguageService');
+		$this->languageService->init($this->tsfeLanguage);
+		$this->loadLanguageFilesFromTS();
+		$this->loadLanguageFiles();
+		$this->overloadLanguageLabelsFromTS();
 	}
 
 	/**
@@ -334,25 +392,40 @@ abstract class AbstractController {
 	}
 
 	/**
-	 * Initializes the instance
+	 * Loads language files for the plugin. Derieved classes should override this
+	 * function and load their language files like:
+	 * <pre>
+	 * $this->addLanguageLabels($this->getLang()->includeLLFile(t3lib_extMgm::extPath('extkey') . 'lang/locallang.xml'));
+	 * </pre>
 	 *
 	 * @return void
 	 */
-	private function mergeFlexform() {
-		$flexform = (array)\TYPO3\CMS\Core\Utility\GeneralUtility::xml2array($this->cObj->data['pi_flexform']);
-		if (isset($flexform['data']['sDEF']['lDEF'])) {
-			foreach ($flexform['data']['sDEF']['lDEF'] as $fieldName => $fieldValue) {
-				if (isset($fieldValue['vDEF'])) {
-					$value = trim($fieldValue['vDEF']);
-					if ($value) {
-						$this->configuration[$fieldName] = $value;
-					}
-				}
-				elseif (isset($fieldValue['el'])) {
-					$this->configuration[$fieldName] = $fieldValue['el'];
-				}
+	protected function loadLanguageFiles() {
+	}
+
+	/**
+	 * Loads language files from TypoScript.
+	 *
+	 * @return void
+	 */
+	protected function loadLanguageFilesFromTS() {
+		$fileList = $this->getConfigurationValue('simplemvc.languageFiles.', null);
+		if (is_array($fileList) && count($fileList) > 0) {
+			foreach ($fileList as $file) {
+				$this->addLanguageLabelsFromFile($file);
 			}
 		}
 	}
 
+	/**
+	 * Overloads labels from TypoScript
+	 *
+	 * @return void
+	 */
+	protected function overloadLanguageLabelsFromTS() {
+		$labels = $this->getConfigurationValue('_LOCAL_LANG.' . $this->tsfeLanguage . '.', array());
+		if (is_array($labels)) {
+			$this->languageLabels = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($this->languageLabels, $labels);
+		}
+	}
 }

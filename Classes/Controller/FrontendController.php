@@ -34,4 +34,38 @@ namespace DmitryDulepov\Simplemvc\Controller;
  */
 class FrontendController extends AbstractController {
 
+	/**
+	 * Initializes the instance
+	 *
+	 * @param array $configuration
+	 * @return void
+	 */
+	public function init(array $configuration) {
+		parent::init($configuration);
+
+		$this->mergeFlexform();
+	}
+
+	/**
+	 * Initializes the instance
+	 *
+	 * @return void
+	 */
+	private function mergeFlexform() {
+		$flexform = (array)\TYPO3\CMS\Core\Utility\GeneralUtility::xml2array($this->cObj->data['pi_flexform']);
+		if (isset($flexform['data']['sDEF']['lDEF'])) {
+			foreach ($flexform['data']['sDEF']['lDEF'] as $fieldName => $fieldValue) {
+				if (isset($fieldValue['vDEF'])) {
+					$value = trim($fieldValue['vDEF']);
+					if ($value) {
+						$this->configuration[$fieldName] = $value;
+					}
+				}
+				elseif (isset($fieldValue['el'])) {
+					$this->configuration[$fieldName] = $fieldValue['el'];
+				}
+			}
+		}
+	}
+
 }
