@@ -47,10 +47,14 @@ namespace DmitryDulepov\Simplemvc\Model;
  * $model->save();
  * $newRecordId = $model->getId();
  *
- * Note: you *must* call setPid() or saving will fail. This ensures TYPO3
+ * Note #1: you *must* call setPid() or saving will fail. This ensures TYPO3
  * compatibility.
+ * Note #2: you may get warnings for the undefined methods when you call
+ * setName and setDescription. You can add "@property" annotations in the
+ * class header to avoid these warnings and enable PhpStorm signature checking.
  *
- * This assumes that the table is defined at least like this in ext_tables.sql:
+ * The code above assumes that the table is defined at least like this in
+ * ext_tables.sql:
  *
  * CREATE TABLE tx_myext_album (
  * 		uid int(11) unsigned NOT NULL auto_increment,
@@ -58,6 +62,10 @@ namespace DmitryDulepov\Simplemvc\Model;
  * 		name varchar(255) DEFAULT '' NOT NULL,
  * 		description varchar(255) DEFAULT '' NOT NULL
  * );
+ *
+ * If you need to do additional processing for attributes, you may define
+ * get/set methods yourself. You only need to define methods where you really
+ * want to modify the default behavior (for example, just a "set" method).
  *
  *
  * @author Dmitry Dulepov <dmitry.dulepov@gmail.com>
