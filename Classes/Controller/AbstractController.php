@@ -262,6 +262,46 @@ abstract class AbstractController {
 	}
 
 	/**
+	 * Renders the content of the TS object. If the path starts with a dot, it will
+	 * get the TS from the current configuration. Otherwise global TS setup is
+	 * examined.
+	 *
+	 * This method resides in the controller because sometimes it is useful to
+	 * represent some of the logic with the TypoScript. Controllers can evaluate
+	 * the TS object to decide how to behave in certain situations. For example,
+	 * redirects URLs can be created this way for use in controllers.
+	 *
+	 * @param string $tsPath
+	 * @param array|null $data
+	 * @param string $tableName
+	 * @return string
+	 */
+	public function renderTSObject($tsPath, array $data = NULL, $tableName = '_NO_TABLE') {
+		if ($tsPath{0} == '.') {
+			$tsPath = substr($tsPath, 1);
+			$tsType = $this->getConfigurationValue($tsPath, '');
+			$tsConf = $this->getConfigurationValue($tsPath . '.', '');
+		}
+		else {
+			$config = $GLOBALS['TSFE']->tmpl->setup;
+			$tsType = \DmitryDulepov\Simplemvc\Controller\AbstractController::getConfigurationValueFromArray($config, $tsPath, '');
+			$tsConf = \DmitryDulepov\Simplemvc\Controller\AbstractController::getConfigurationValueFromArray($config, $tsPath . '.', '');
+		}
+		$result = '';
+
+		if ($tsType && is_array($tsConf)) {
+			$cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer');
+			/** @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $cObj */
+			if ($data) {
+				$cObj->start($data, $tableName);
+			}
+			$result = $cObj->cObjGetSingle($tsType, $tsConf);
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Sets the value of the POST parameter.
 	 *
 	 * @param string $name
