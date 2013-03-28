@@ -37,7 +37,9 @@ namespace DmitryDulepov\Simplemvc\Controller;
 abstract class AbstractController {
 
 	/**
-	 * Content object, set by the calling instance from the outside.
+	 * Content object for use with this controller. This has to be public
+	 * because TYPO3 may set it from the outside. The name has to be like this
+	 * due to TYPO3 constraints.
 	 *
 	 * @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
 	 */
