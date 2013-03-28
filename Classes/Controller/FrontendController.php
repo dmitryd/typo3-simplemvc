@@ -98,11 +98,12 @@ class FrontendController extends AbstractController {
 	 * @param array $configuration Plugin configuration
 	 * @return string
 	 */
-	public function main($unused, array $configuration) {
+	public function main(/** @noinspection PhpUnusedParameterInspection */ $unused, array $configuration) {
 		$this->init($configuration);
 
 		if ($this->requireChash) {
 			if ($this->cObj->getUserObjectType() == \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer::OBJECTTYPE_USER) {
+				/** @noinspection PhpUndefinedMethodInspection */
 				$GLOBALS['TSFE']->reqCHash();
 			}
 			else {

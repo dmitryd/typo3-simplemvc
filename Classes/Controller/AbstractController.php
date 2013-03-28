@@ -231,6 +231,7 @@ abstract class AbstractController {
 	 */
 	public function getReCaptchaFields() {
 		if (!function_exists('recaptcha_get_html')) {
+			/** @noinspection PhpIncludeInspection */
 			require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
 		}
 		$publicKey = $this->getConfigurationValue('simplemvc.reCaptcha.publicKey');
@@ -286,6 +287,7 @@ abstract class AbstractController {
 	 */
 	public function isValidReCaptcha() {
 		if (!function_exists('recaptcha_check_answer')) {
+			/** @noinspection PhpIncludeInspection */
 			require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
 		}
 		$privateKey = $this->getConfigurationValue('simplemvc.reCaptcha.privateKey');
