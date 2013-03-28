@@ -45,7 +45,12 @@ abstract class AbstractController {
 	 */
 	public $cObj;
 
-	/** @var string */
+	/**
+	 * Current frontend language identifier (such as "de" or "default"). This
+	 * is normally taken from "config.language" TS option.
+	 *
+	 * @var string
+	 */
 	protected $tsfeLanguage;
 
 	/**
@@ -70,7 +75,12 @@ abstract class AbstractController {
 	 */
 	private $getParameters = array();
 
-	/** @var \TYPO3\CMS\Lang\LanguageService */
+	/**
+	 * This is a language object that controllers can use to manipulate
+	 * strings.
+	 *
+	 * @var \TYPO3\CMS\Lang\LanguageService
+	 */
 	protected $languageService;
 
 	/**
@@ -81,7 +91,7 @@ abstract class AbstractController {
 	private $languageLabels = array();
 
 	/**
-	 * Merged parameters
+	 * Merged GET and POST parameters
 	 *
 	 * @var string
 	 */
@@ -93,13 +103,6 @@ abstract class AbstractController {
 	 * @var string
 	 */
 	private $postParameters = array();
-
-	/**
-	 * Frontend language id
-	 *
-	 * @var string
-	 */
-	protected $frontendLanguageId;
 
 	/**
 	 * Creates an instance of this class
@@ -494,7 +497,7 @@ abstract class AbstractController {
 	 * Loads language files for the plugin. Derieved classes should override this
 	 * function and load their language files like:
 	 * <pre>
-	 * $this->addLanguageLabels($this->getLang()->includeLLFile(t3lib_extMgm::extPath('extkey') . 'lang/locallang.xml'));
+	 * $this->addLanguageLabels($this->getLanguageService()->includeLLFile(t3lib_extMgm::extPath('extkey') . 'lang/locallang.xml'));
 	 * </pre>
 	 *
 	 * @return void
