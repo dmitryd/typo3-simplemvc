@@ -28,7 +28,37 @@ namespace DmitryDulepov\Simplemvc\Model;
  ***************************************************************/
 
 /**
- * This is an abstract model for the SimpleMVC framework.
+ * This is an abstract model for the SimpleMVC framework. The two members
+ * below ($tableName and $className) *MUST* be redeclared in the derieved
+ * class. Other members can be redeclared as necessary. The minimal model
+ * will look like:
+ *
+ * class Album extends \DmitryDulepov\Simplemvc\Model\AbstractModel {
+ * 		static protected $tableName = 'tx_myext_album';
+ * 		static protected $className = __CLASS__;
+ * }
+ *
+ * After that you can use the model like this:
+ *
+ * $model = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('JohnDoe\\Myalbum\\Model\\Album');
+ * $model->setPid($pid);
+ * $model->setName('My first album');
+ * $model->setDescription('I like SimpleMVC!');
+ * $model->save();
+ * $newRecordId = $model->getId();
+ *
+ * Note: you *must* call setPid() or saving will fail. This ensures TYPO3
+ * compatibility.
+ *
+ * This assumes that the table is defined at least like this in ext_tables.sql:
+ *
+ * CREATE TABLE tx_myext_album (
+ * 		uid int(11) unsigned NOT NULL auto_increment,
+ *		pid int(11) unsigned DEFAULT '0' NOT NULL,
+ * 		name varchar(255) DEFAULT '' NOT NULL,
+ * 		description varchar(255) DEFAULT '' NOT NULL
+ * );
+ *
  *
  * @author Dmitry Dulepov <dmitry.dulepov@gmail.com>
  */
@@ -43,8 +73,8 @@ abstract class AbstractModel {
 	static protected $tableName = '';
 
 	/**
-	 * Current class name. This *MUST* be set in the overloaded class to the filexactly
-	 * like this:
+	 * Current class name. This *MUST* be set in the overloaded class to look
+	 * exactly like this:
 	 *
 	 *	static protected $className = __CLASS__;
 	 *
@@ -140,13 +170,21 @@ abstract class AbstractModel {
 	 */
 	protected $objectCache = array();
 
+	/** @var bool|null */
+	static private $shouldLoadTCA = null;
+
 	/**
 	 * Creates an instance of this class
 	 *
-	 * @param mixed $idOrRow
+	 * @param int|array $idOrRow
 	 */
 	public function __construct($idOrRow = null) {
-		\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA(static::$tableName);
+		if (is_null(self::$shouldLoadTCA)) {
+			self::$shouldLoadTCA = version_compare(TYPO3_branch, '6.1', '<');
+		}
+		if (self::$shouldLoadTCA) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA(static::$tableName);
+		}
 		if (is_array($idOrRow)) {
 			$this->currentRow = $idOrRow;
 			if (isset($this->currentRow['uid'])) {
@@ -181,7 +219,7 @@ abstract class AbstractModel {
 		// Get table name from the class
 		$tableName = static::$tableName;
 
-		$sorting = self::getSortingForTable($tableName);
+		$sorting = static::getSortingForTable($tableName);
 		if (!is_null($pidList)) {
 			/** @noinspection PhpUndefinedMethodInspection */
 			$pidList = $GLOBALS['TYPO3_DB']->cleanIntList($pidList);
@@ -372,28 +410,26 @@ abstract class AbstractModel {
 	 * @return AbstractModel
 	 */
 	public static function getLimit($start, $amount, $pidList = '') {
-		// Get table name from the class
-		$tableName = static::$tableName;
-		if (version_compare(TYPO3_branch, '6.1', '<')) {
-			\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA($tableName);
+		if (self::$shouldLoadTCA) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA(static::$tableName);
 		}
 
-		$sorting = self::getSortingForTable($tableName);
+		$sorting = self::getSortingForTable(static::$tableName);
 
 		if ($pidList) {
 			/** @noinspection PhpUndefinedMethodInspection */
 			$pidList = $GLOBALS['TYPO3_DB']->cleanIntList($pidList);
 		}
 		if ($pidList) {
-			$where = 'pid IN (' . $pidList . ')' . self::enableFields($tableName);
+			$where = 'pid IN (' . $pidList . ')' . self::enableFields(static::$tableName);
 		}
 		else {
-			$where = self::enableFieldsClean($tableName);
+			$where = self::enableFieldsClean(static::$tableName);
 		}
 
 		$result = array();
 		/** @noinspection PhpUndefinedMethodInspection */
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $tableName,
+		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', static::$tableName,
 			$where, '', $sorting, $start . ',' . $amount);
 		/** @noinspection PhpUndefinedMethodInspection */
 		while (false !== ($data = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))) {
@@ -609,7 +645,8 @@ abstract class AbstractModel {
 	}
 
 	/**
-	 * Obtains sorting for the table (just fields, no ORDER BY).
+	 * Obtains sorting for the table (just fields, no ORDER BY). This function
+	 * can be redeclared in the derieved class despite being static.
 	 *
 	 * @param string $tableName
 	 * @return string
@@ -861,11 +898,12 @@ abstract class AbstractModel {
 
 /**
  * Fastest possible way to map capital letters to normal ones.
+ *
  * @param string $match
  * @return string
  */
 function tx_simplemvc_model_convertForName($match) {
-	$map = array(
+	static $map = array(
 		'A' => 'a',
 		'B' => 'b',
 		'C' => 'c',
