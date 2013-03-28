@@ -347,7 +347,7 @@ abstract class AbstractController {
 		$result = '';
 
 		if ($tsType && is_array($tsConf)) {
-			$cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer');
+			$cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\Frontend\\ContentObject\\ContentObjectRenderer');
 			/** @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $cObj */
 			if ($data) {
 				$cObj->start($data, $tableName);
@@ -468,7 +468,7 @@ abstract class AbstractController {
 	 */
 	protected function initLanguage() {
 		// Init language
-		$this->languageService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\TYPO3\\CMS\\Lang\\LanguageService');
+		$this->languageService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Lang\\LanguageService');
 		$this->languageService->init($this->tsfeLanguage);
 		$this->loadLanguageFilesFromTS();
 		$this->loadLanguageFiles();
