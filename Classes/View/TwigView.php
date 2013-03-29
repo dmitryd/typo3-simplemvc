@@ -1,6 +1,7 @@
 <?php
 namespace DmitryDulepov\Simplemvc\View;
 
+use DmitryDulepov\Simplemvc\Controller\AbstractController;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /***************************************************************
@@ -44,10 +45,10 @@ class TwigView extends AbstractView implements \Twig_LoaderInterface {
 	protected $templateFilePath;
 
 	/**
-	 * @param \DmitryDulepov\Simplemvc\Controller\AbstractController $controller
+	 * @param AbstractController $controller
 	 * @param string|null $templateFile
 	 */
-	public function __construct(\DmitryDulepov\Simplemvc\Controller\AbstractController $controller) {
+	public function __construct(AbstractController $controller) {
 		parent::__construct($controller);
 		$this->setTemplateFilePath(null);
 	}

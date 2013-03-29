@@ -1,6 +1,8 @@
 <?php
 namespace DmitryDulepov\Simplemvc\View;
 
+use \DmitryDulepov\Simplemvc\Controller\AbstractController;
+
 /***************************************************************
  *  Copyright notice
  *
@@ -35,7 +37,7 @@ namespace DmitryDulepov\Simplemvc\View;
  */
 abstract class AbstractView {
 
-	/** @var \DmitryDulepov\Simplemvc\Controller\AbstractController */
+	/** @var AbstractController */
 	private $controller;
 
 	/**
@@ -53,7 +55,7 @@ abstract class AbstractView {
 	 *
 	 * @param \DmitryDulepov\Simplemvc\Controller\AbstractController $controller
 	 */
-	public function __construct(\DmitryDulepov\Simplemvc\Controller\AbstractController $controller) {
+	public function __construct(AbstractController $controller) {
 		$this->controller = $controller;
 	}
 
@@ -77,7 +79,7 @@ abstract class AbstractView {
 	/**
 	 * Obtains the current controller.
 	 *
-	 * @return \DmitryDulepov\Simplemvc\Controller\AbstractController
+	 * @return AbstractController
 	 */
 	protected function getController() {
 		return $this->controller;

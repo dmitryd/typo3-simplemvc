@@ -1,6 +1,7 @@
 <?php
 namespace DmitryDulepov\Simplemvc\Controller;
 
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /***************************************************************
@@ -133,9 +134,9 @@ abstract class AbstractController {
 		}
 
 		// Load parameters
-		$this->getParameters = (array)\TYPO3\CMS\Core\Utility\GeneralUtility::_GET($this->parameterPrefix);
-		$this->postParameters = (array)\TYPO3\CMS\Core\Utility\GeneralUtility::_POST($this->parameterPrefix);
-		$this->mergedParameters = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($this->getParameters, $this->postParameters);
+		$this->getParameters = (array)GeneralUtility::_GET($this->parameterPrefix);
+		$this->postParameters = (array)GeneralUtility::_POST($this->parameterPrefix);
+		$this->mergedParameters = GeneralUtility::array_merge_recursive_overrule($this->getParameters, $this->postParameters);
 	}
 
 	/**
@@ -266,7 +267,7 @@ abstract class AbstractController {
 	public function getReCaptchaFields() {
 		if (!function_exists('recaptcha_get_html')) {
 			/** @noinspection PhpIncludeInspection */
-			require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
+			require_once(ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
 		}
 		$publicKey = $this->getConfigurationValue('simplemvc.reCaptcha.publicKey');
 		return recaptcha_get_html($publicKey);
@@ -292,14 +293,14 @@ abstract class AbstractController {
 	 * @return string
 	 */
 	public function implodeParametersForURL($parameterList) {
-		$parameterList = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $parameterList, true);
+		$parameterList = GeneralUtility::trimExplode(',', $parameterList, true);
 		$parameters = array();
 		foreach ($parameterList as $parameter) {
 			if (isset($this->mergedParameters[$parameter])) {
 				$parameters[$parameter] = $this->mergedParameters[$parameter];
 			}
 		}
-		return \TYPO3\CMS\Core\Utility\GeneralUtility::implodeArrayForUrl($this->parameterPrefix, $parameters);
+		return GeneralUtility::implodeArrayForUrl($this->parameterPrefix, $parameters);
 	}
 
 	/**
@@ -335,7 +336,7 @@ abstract class AbstractController {
 	public function isValidReCaptcha() {
 		if (!function_exists('recaptcha_check_answer')) {
 			/** @noinspection PhpIncludeInspection */
-			require_once(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
+			require_once(ExtensionManagementUtility::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
 		}
 		$privateKey = $this->getConfigurationValue('simplemvc.reCaptcha.privateKey');
 		$response = recaptcha_check_answer($privateKey,
@@ -394,7 +395,7 @@ abstract class AbstractController {
 		$result = '';
 
 		if ($tsType && is_array($tsConf)) {
-			$cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\Frontend\\ContentObject\\ContentObjectRenderer');
+			$cObj = GeneralUtility::makeInstance('TYPO3\\CMS\Frontend\\ContentObject\\ContentObjectRenderer');
 			/** @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $cObj */
 			if ($data) {
 				$cObj->start($data, $tableName);
@@ -434,9 +435,9 @@ abstract class AbstractController {
 	 * @return void
 	 */
 	protected function addLanguageLabelsFromFile($fileRef) {
-		$labels = \TYPO3\CMS\Core\Utility\GeneralUtility::readLLfile($fileRef, $this->tsfeLanguage);
+		$labels = GeneralUtility::readLLfile($fileRef, $this->tsfeLanguage);
 		if (isset($labels[$this->tsfeLanguage])) {
-			$labels['default'] = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($labels['default'], $labels[$this->tsfeLanguage]);
+			$labels['default'] = GeneralUtility::array_merge_recursive_overrule($labels['default'], $labels[$this->tsfeLanguage]);
 		}
 		reset($labels['default']);
 		if (is_array(current($labels['default']))) {
@@ -526,7 +527,7 @@ abstract class AbstractController {
 	 */
 	protected function initLanguage() {
 		// Init language
-		$this->languageService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Lang\\LanguageService');
+		$this->languageService = GeneralUtility::makeInstance('TYPO3\\CMS\\Lang\\LanguageService');
 		$this->languageService->init($this->tsfeLanguage);
 		$this->loadLanguageFilesFromTS();
 		$this->loadLanguageFiles();
@@ -580,7 +581,7 @@ abstract class AbstractController {
 	protected function overloadLanguageLabelsFromTS() {
 		$labels = $this->getConfigurationValue('_LOCAL_LANG.' . $this->tsfeLanguage . '.', array());
 		if (is_array($labels)) {
-			$this->languageLabels = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($this->languageLabels, $labels);
+			$this->languageLabels = GeneralUtility::array_merge_recursive_overrule($this->languageLabels, $labels);
 		}
 	}
 }

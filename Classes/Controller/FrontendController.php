@@ -1,6 +1,9 @@
 <?php
 namespace DmitryDulepov\Simplemvc\Controller;
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+
 /***************************************************************
  *  Copyright notice
  *
@@ -93,7 +96,7 @@ class FrontendController extends AbstractController {
 		if (!is_array($_SESSION)) {
 			session_start();
 		}
-		$_SESSION[$this->csrfTokenName] = \TYPO3\CMS\Core\Utility\GeneralUtility::getRandomHexString(64);
+		$_SESSION[$this->csrfTokenName] = GeneralUtility::getRandomHexString(64);
 		return sha1($_SESSION[$this->csrfTokenName]);
 	}
 
@@ -108,7 +111,7 @@ class FrontendController extends AbstractController {
 		$this->init($configuration);
 
 		if ($this->requireChash) {
-			if ($this->cObj->getUserObjectType() == \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer::OBJECTTYPE_USER) {
+			if ($this->cObj->getUserObjectType() == ContentObjectRenderer::OBJECTTYPE_USER) {
 				/** @noinspection PhpUndefinedMethodInspection */
 				$GLOBALS['TSFE']->reqCHash();
 			}
@@ -143,7 +146,7 @@ class FrontendController extends AbstractController {
 	 * @return void
 	 */
 	private function mergeFlexform() {
-		$flexform = (array)\TYPO3\CMS\Core\Utility\GeneralUtility::xml2array($this->cObj->data['pi_flexform']);
+		$flexform = (array)GeneralUtility::xml2array($this->cObj->data['pi_flexform']);
 		if (isset($flexform['data']['sDEF']['lDEF'])) {
 			foreach ($flexform['data']['sDEF']['lDEF'] as $fieldName => $fieldValue) {
 				if (isset($fieldValue['vDEF'])) {

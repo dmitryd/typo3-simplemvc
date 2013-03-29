@@ -1,6 +1,9 @@
 <?php
 namespace DmitryDulepov\Simplemvc\Model;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
+
 /***************************************************************
  *  Copyright notice
  *
@@ -40,7 +43,7 @@ namespace DmitryDulepov\Simplemvc\Model;
  *
  * After that you can use the model like this:
  *
- * $model = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('JohnDoe\\Myalbum\\Model\\Album');
+ * $model = GeneralUtility::makeInstance('JohnDoe\\Myalbum\\Model\\Album');
  * $model->setPid($pid);
  * $model->setName('My first album');
  * $model->setDescription('I like SimpleMVC!');
@@ -183,7 +186,7 @@ abstract class AbstractModel {
 			self::$shouldLoadTCA = version_compare(TYPO3_branch, '6.1', '<');
 		}
 		if (self::$shouldLoadTCA) {
-			\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA(static::$tableName);
+			GeneralUtility::loadTCA(static::$tableName);
 		}
 		if (is_array($idOrRow)) {
 			$this->currentRow = $idOrRow;
@@ -214,7 +217,7 @@ abstract class AbstractModel {
 	public function clearCache() {
 		if (static::$enableCache) {
 /* TODO Implement
-			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_simplemvc_cache');
+			$cache = GeneralUtility::makeInstance('tx_simplemvc_cache');
 			$cacheKey = $cache->getCacheKey(get_class($this), $this->getId());
 			$cache->remove($cacheKey);
 			foreach ($this->additionalCacheKeys as $cacheKey) {
@@ -242,7 +245,7 @@ abstract class AbstractModel {
 						 'soft' => !$forceDatabaseDelete,
 						 'result' => true
 					 );
-					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+					 GeneralUtility::callUserFunction($hook, $parameters, $this);
 					 if (!$parameters['result']) {
 						 return;
 					 }
@@ -254,7 +257,7 @@ abstract class AbstractModel {
 						 'instance' => $this,
 						 'soft' => !$forceDatabaseDelete,
 					 );
-					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+					 GeneralUtility::callUserFunction($hook, $parameters, $this);
 				 }
 			}
 
@@ -283,7 +286,7 @@ abstract class AbstractModel {
 						 'instance' => $this,
 						 'soft' => !$forceDatabaseDelete
 					 );
-					 \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+					 GeneralUtility::callUserFunction($hook, $parameters, $this);
 				 }
 			}
 
@@ -362,7 +365,7 @@ abstract class AbstractModel {
 		);
 
 		foreach ($rows as $row) {
-			$result[] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(static::$className, $row);
+			$result[] = GeneralUtility::makeInstance(static::$className, $row);
 		}
 
 		return $result;
@@ -397,7 +400,7 @@ abstract class AbstractModel {
 			// Try cache if enabled
 /* TODO not yet supported in master
 			if ($cachingEnabled) {
-				$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_simplemvc_cache');
+				$cache = GeneralUtility::makeInstance('tx_simplemvc_cache');
 				$cacheKey = $cache->getCacheKey($className, $id);
 				$casToken = null;
 				list($result, $casToken) = $cache->get($cacheKey, true);
@@ -414,7 +417,7 @@ abstract class AbstractModel {
 						'uid=' . intval($id) . self::enableFields($tableName));
 
 				if (is_array($row)) {
-					$result = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance($className, $row);
+					$result = GeneralUtility::makeInstance($className, $row);
 					/** @var AbstractModel $result */
 					$result->cacheMe();
 				}
@@ -437,7 +440,7 @@ abstract class AbstractModel {
 	public static function getByIdList($idList, $sorting = null, $start = null, $amount = null) {
 		$result = array();
 
-		$idList = implode(',', array_filter(\TYPO3\CMS\Core\Utility\GeneralUtility::intExplode(',', $idList)));
+		$idList = implode(',', array_filter(GeneralUtility::intExplode(',', $idList)));
 
 		if ($idList) {
 			// Get table name from the class
@@ -462,7 +465,7 @@ abstract class AbstractModel {
 			);
 
 			foreach ($rows as $row) {
-				$result[] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(static::$className, $row);
+				$result[] = GeneralUtility::makeInstance(static::$className, $row);
 			}
 		}
 
@@ -479,7 +482,7 @@ abstract class AbstractModel {
 	public static function getCountByIdList($idList) {
 		$result = 0;
 
-		$idList = implode(',', array_filter(\TYPO3\CMS\Core\Utility\GeneralUtility::intExplode(',', $idList)));
+		$idList = implode(',', array_filter(GeneralUtility::intExplode(',', $idList)));
 
 		if ($idList) {
 			// Get table name from the class
@@ -513,7 +516,7 @@ abstract class AbstractModel {
 	public function getPermalink() {
 		$result = '';
 		if ($this->permalinkTSPath) {
-			$cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
+			$cObj = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
 			/** @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $cObj */
 			$cObj->start($this->currentRow, static::$tableName);
 			$tsName = \DmitryDulepov\Simplemvc\Controller\AbstractController::getConfigurationValueFromArray($GLOBALS['TSFE']->tmpl->setup, $this->permalinkTSPath, '');
@@ -536,7 +539,7 @@ abstract class AbstractModel {
 	 */
 	public static function getLimit($start, $amount, $pidList = '') {
 		if (self::$shouldLoadTCA) {
-			\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA(static::$tableName);
+			GeneralUtility::loadTCA(static::$tableName);
 		}
 
 		$sorting = self::getSortingForTable(static::$tableName);
@@ -558,7 +561,7 @@ abstract class AbstractModel {
 			$where, '', $sorting, $start . ',' . $amount);
 		/** @noinspection PhpUndefinedMethodInspection */
 		while (false !== ($data = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))) {
-			$result[] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(static::$className, $data);
+			$result[] = GeneralUtility::makeInstance(static::$className, $data);
 		}
 		/** @noinspection PhpUndefinedMethodInspection */
 		$GLOBALS['TYPO3_DB']->sql_free_result($res);
@@ -632,7 +635,7 @@ abstract class AbstractModel {
 					'instance' => $this,
 					'modifiedFieldsList' => array_keys($dataDiff)
 				);
-				\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+				GeneralUtility::callUserFunction($hook, $parameters, $this);
 			}
 		}
 
@@ -670,7 +673,7 @@ abstract class AbstractModel {
 					static::$tableName, 'uid=' . $uid);
 
 				// Update refindex
-				$refindex = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('t3lib_refindex');
+				$refindex = GeneralUtility::makeInstance('t3lib_refindex');
 				/* @var \TYPO3\CMS\Core\Database\ReferenceIndex $refindex */
 				$refindex->updateRefIndexTable(static::$tableName, $this->currentRow['uid']);
 
@@ -695,7 +698,7 @@ abstract class AbstractModel {
 						'modifiedFieldsList' => array_keys($dataDiff),
 						'new' => $newRecord
 					);
-					\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+					GeneralUtility::callUserFunction($hook, $parameters, $this);
 				}
 			}
 
@@ -794,7 +797,7 @@ abstract class AbstractModel {
 	protected function cacheMe() {
 		if (static::$enableCache) {
 /* TODO Implement
-			$cache = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tx_simplemvc_cache');
+			$cache = GeneralUtility::makeInstance('tx_simplemvc_cache');
 			$cacheKey = $cache->getCacheKey(get_class($this), $this->getId());
 			$cache->set($cacheKey, $this, $this->cacheTimeout, $this->casToken);
 */
@@ -897,7 +900,7 @@ abstract class AbstractModel {
 		$attributeName = $this->getAttributeName($attributeName);
 
 		$id = $attributeValue->getId();
-		if (!\TYPO3\CMS\Core\Utility\MathUtility::canBeInterpretedAsInteger($id)) {
+		if (!MathUtility::canBeInterpretedAsInteger($id)) {
 			throw new \Exception(sprintf(
 				'Unable to set value for the attribute "%s.%s" (class "%s") because the value ' .
 					'object does not have the id yet.',

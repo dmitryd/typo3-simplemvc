@@ -1,6 +1,9 @@
 <?php
 namespace DmitryDulepov\Simplemvc\Controller;
 
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use \TYPO3\CMS\Frontend\Page\PageGenerator;
+
 /***************************************************************
  *  Copyright notice
  *
@@ -63,7 +66,7 @@ class AjaxController extends AbstractController {
 	 * @see AbsractController::initCObj()
 	 */
 	protected function initCObj() {
-		$this->cObj = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\Frontend\\ContentObject\\ContentObjectRenderer');
+		$this->cObj = GeneralUtility::makeInstance('TYPO3\\CMS\Frontend\\ContentObject\\ContentObjectRenderer');
 	}
 
 	/**
@@ -145,13 +148,13 @@ class AjaxController extends AbstractController {
 	 */
 	protected function initTSFE() {
 		// Initialize basic TSFE
-		if (!($id = intval(\TYPO3\CMS\Core\Utility\GeneralUtility::_GP('id')))) {
+		if (!($id = intval(GeneralUtility::_GP('id')))) {
 			if (!($id = intval($this->getParameter('id')))) {
 				throw new \Exception('`id` parameter is not set', 1364489554);
 			}
 		}
 
-		$GLOBALS['TSFE'] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Controller\\TypoScriptFrontendController', $GLOBALS['TYPO3_CONF_VARS'], $id, '');
+		$GLOBALS['TSFE'] = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Controller\\TypoScriptFrontendController', $GLOBALS['TYPO3_CONF_VARS'], $id, '');
 		$GLOBALS['TSFE']->set_no_cache();
 		$GLOBALS['TSFE']->connectToDB();
 		$GLOBALS['TSFE']->initFEuser();
@@ -161,6 +164,6 @@ class AjaxController extends AbstractController {
 		$GLOBALS['TSFE']->getConfigArray();
 
 		// Set linkVars, absRefPrefix, etc
-		\TYPO3\CMS\Frontend\Page\PageGenerator::pagegenInit();
+		PageGenerator::pagegenInit();
 	}
 }
