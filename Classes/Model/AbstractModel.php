@@ -376,7 +376,7 @@ abstract class AbstractModel {
 	 * @param string $className
 	 * @return AbstractModel
 	 */
-	public static function getById($id, $className = NULL) {
+	public static function getById($id, $className = null) {
 		$result = null;
 
 		if ($id) {
@@ -755,6 +755,35 @@ abstract class AbstractModel {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Twig support: check if the property exist. Use in the PHP code is
+	 * discouraged and not supported!
+	 *
+	 * @param string $propertyName
+	 * @return bool
+	 */
+	public function __isset($propertyName) {
+		$attributeName = $this->getAttributeName($propertyName);
+		$result = isset($this->currentRow[$attributeName]) || isset($this->objectCache[$attributeName]);
+		if (!$result && isset($this->fieldToObjectMap[$attributeName])) {
+			$id = intval($this->currentRow[$attributeName . '_id']);
+			$result = ($id > 0);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Twig support: get field as a property. Use in the PHP code is discouraged
+	 * and not supported!
+	 *
+	 * @param string $propertyName
+	 * @return mixed
+	 */
+	public function __get($propertyName) {
+		return $this->getAttributeValue($this->getAttributeName($propertyName));
 	}
 
 	/**

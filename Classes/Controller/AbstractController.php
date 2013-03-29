@@ -59,6 +59,9 @@ abstract class AbstractController {
 	 */
 	protected $configuration;
 
+	/** @var string */
+	private $currentAction;
+
 	/**
 	 * Prefix for URL parameters. If empty, implementation class will be
 	 * substituted. This can be changed by the derieved class by defining
@@ -117,6 +120,16 @@ abstract class AbstractController {
 		$this->getParameters = (array)\TYPO3\CMS\Core\Utility\GeneralUtility::_GET($this->parameterPrefix);
 		$this->postParameters = (array)\TYPO3\CMS\Core\Utility\GeneralUtility::_POST($this->parameterPrefix);
 		$this->mergedParameters = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($this->getParameters, $this->postParameters);
+	}
+
+	/**
+	 * Obtains the name of the current action. If there is no action yet,
+	 * returns null. This function can be used in views.
+	 *
+	 * @return string
+	 */
+	public function getAction() {
+		return $this->currentAction;
 	}
 
 	/**
@@ -421,7 +434,9 @@ abstract class AbstractController {
 			if (!$action) {
 				$action = $this->getParameter('action', 'index');
 			}
-			$method = ($action ? $action : 'index') . 'Action';
+			$action = $action ?: 'index';
+			$this->currentAction = $action;
+			$method = $action . 'Action';
 			if ('' == ($content = $this->preprocessAction($action))) {
 				if ($action == 'error' || !method_exists($this, $method)) {
 					$content = $this->errorAction($action);
