@@ -39,6 +39,16 @@ abstract class AbstractView {
 	private $controller;
 
 	/**
+	 * Data to render with the view. Not all views use this. This is set to the
+	 * result of the action in the controller if the action returns an object
+	 * or an array. Extensions can use this to render such results automatically
+	 * with their view classes.
+	 *
+	 * @var mixed
+	 */
+	protected $data = null;
+
+	/**
 	 * Creates the instance of this class.
 	 *
 	 * @param \DmitryDulepov\Simplemvc\Controller\AbstractController $controller
@@ -53,6 +63,16 @@ abstract class AbstractView {
 	 * @return string
 	 */
 	abstract public function render();
+
+	/**
+	 * Sets the data to render with the view. Optional.
+	 *
+	 * @param mixed $data
+	 * @return void
+	 */
+	public function setData($data) {
+		$this->data = $data;
+	}
 
 	/**
 	 * Obtains the current controller.

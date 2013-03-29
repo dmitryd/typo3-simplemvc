@@ -1,0 +1,4 @@
+<IfModule mod_authz_host.c>
+	order allow,deny
+	deny from all
+</IfModule>

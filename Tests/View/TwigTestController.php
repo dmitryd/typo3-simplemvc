@@ -1,8 +1,10 @@
 <?php
+namespace DmitryDulepov\Simplemvc\Test;
+
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2013 Dmitry Dulepov <dmitry.dulepov@gmail.com>
+ *  (c) 2010-2013 Dmitry Dulepov <dmitry.dulepov@gmail.com>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,19 +27,18 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-$extPath = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('simplemvc');
-return array(
-	// Controllers
-	'DmitryDulepov\\Simplemvc\\Controller\\AbstractController' => $extPath . 'Classes/Controller/AbstractController.php',
-	'DmitryDulepov\\Simplemvc\\Controller\\AjaxController' => $extPath . 'Classes/Controller/AjaxController.php',
-	'DmitryDulepov\\Simplemvc\\Controller\\FrontendController' => $extPath . 'Classes/Controller/FrontendController.php',
+/**
+ * This class is a test controller for the Twig view test.
+ *
+ * @author Dmitry Dulepov <dmitry.dulepov@gmail.com>
+ */
+class TwigTestController extends \DmitryDulepov\Simplemvc\Controller\FrontendController {
 
-	// Models
-	'DmitryDulepov\\Simplemvc\\Model\\AbstractModel' => $extPath . 'Classes/Model/AbstractModel.php',
+	public function autoTemplateAction() {
+		return array('result' => 'passed');
+	}
 
-	// Views
-	'DmitryDulepov\\Simplemvc\\View\\AbstractView' => $extPath . 'Classes/View/AbstractView.php',
-
-	// Tests
-	'DmitryDulepov\\Simplemvc\\Test\\TwigTestController' => $extPath . 'Tests/View/TwigTestController.php',
-);
+	public function configuredTemplateAction() {
+		return $this->autoTemplateAction();
+	}
+}

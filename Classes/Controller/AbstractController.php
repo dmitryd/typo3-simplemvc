@@ -1,6 +1,8 @@
 <?php
 namespace DmitryDulepov\Simplemvc\Controller;
 
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /***************************************************************
  *  Copyright notice
  *
@@ -106,6 +108,20 @@ abstract class AbstractController {
 	 * @var string
 	 */
 	private $postParameters = array();
+
+	/**
+	 * View class to use if the action does not return a string.
+	 *
+	 * @var string
+	 */
+	protected $viewClass = 'DmitryDulepov\\Simplemvc\\View\\TwigView';
+
+	/**
+	 * The current view.
+	 *
+	 * @var \DmitryDulepov\Simplemvc\View\AbstractView
+	 */
+	private $view = null;
 
 	/**
 	 * Creates an instance of this class
@@ -254,6 +270,19 @@ abstract class AbstractController {
 		}
 		$publicKey = $this->getConfigurationValue('simplemvc.reCaptcha.publicKey');
 		return recaptcha_get_html($publicKey);
+	}
+
+	/**
+	 * Creates the view instance.
+	 *
+	 * @return \DmitryDulepov\Simplemvc\View\AbstractView
+	 */
+	public function getView() {
+		if (is_null($this->view)) {
+			$this->view = GeneralUtility::makeInstance($this->viewClass, $this);
+		}
+
+		return $this->view;
 	}
 
 	/**
@@ -446,6 +475,15 @@ abstract class AbstractController {
 				}
 			}
 		}
+
+		// If action returns an object or an array, we will post-process it with Twig
+		if (is_object($content) || is_array($content)) {
+			// Post process with Twig
+			$view = $this->getView();
+			$view->setData($content);
+			$content = $view->render();
+		}
+
 		return $content;
 	}
 

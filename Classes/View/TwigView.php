@@ -37,13 +37,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 class TwigView extends AbstractView implements \Twig_LoaderInterface {
 
 	/**
-	 * Data to render with Twig.
-	 *
-	 * @var mixed
-	 */
-	protected $data;
-
-	/**
 	 * File path of the twig template.
 	 *
 	 * @var string
@@ -52,13 +45,11 @@ class TwigView extends AbstractView implements \Twig_LoaderInterface {
 
 	/**
 	 * @param \DmitryDulepov\Simplemvc\Controller\AbstractController $controller
-	 * @param mixed $data
 	 * @param string|null $templateFile
 	 */
-	public function __construct(\DmitryDulepov\Simplemvc\Controller\AbstractController $controller, $data, $templateFile = null) {
+	public function __construct(\DmitryDulepov\Simplemvc\Controller\AbstractController $controller) {
 		parent::__construct($controller);
-		$this->data = $data;
-		$this->setTemplateFilePath($templateFile);
+		$this->setTemplateFilePath(null);
 	}
 
 	/**
@@ -111,7 +102,9 @@ class TwigView extends AbstractView implements \Twig_LoaderInterface {
 				$templateFile = sprintf('EXT:%s/Resources/Private/Templates/%s/%s.html.twig', $extensionKey, $controllerClassName, $controllerAction);
 			}
 		}
-		$this->templateFilePath = GeneralUtility::getFileAbsFileName($templateFile);
+		if ($templateFile) {
+			$this->templateFilePath = GeneralUtility::getFileAbsFileName($templateFile);
+		}
 	}
 
 	/**
