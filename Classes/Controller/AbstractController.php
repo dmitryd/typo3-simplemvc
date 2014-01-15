@@ -219,7 +219,7 @@ abstract class AbstractController {
 	 * @return string
 	 */
 	public function getLL($index, $hsc = true) {
-		$label = isset($this->languageLabels[$index]) ? $this->languageLabels[$index] : '';
+		$label = isset($this->languageLabels[$this->tsfeLanguage][$index]['0']['target']) ? $this->languageLabels[$this->tsfeLanguage][$index]['0']['target'] : '';
 		if ($hsc) {
 			$label = htmlspecialchars($label);
 		}
