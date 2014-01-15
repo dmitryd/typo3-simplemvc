@@ -140,6 +140,15 @@ abstract class AbstractController {
 	}
 
 	/**
+	 * Obtains the language labels for the extension
+	 *
+	 * @return array
+	 */
+	public function getLanguageLabels() {
+		return $this->languageLabels;
+	}
+
+	/**
 	 * Obtains the name of the current action. If there is no action yet,
 	 * returns null. This function can be used in views.
 	 *
