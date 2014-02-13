@@ -226,7 +226,7 @@ class tx_simplemvc_abstractcontroller {
 	 * controller instance.
 	 *
 	 * @param string $action Action name
-	 * @return void
+	 * @return void|string
 	 * @throws Exception
 	 */
 	protected function errorAction($action) {
@@ -355,6 +355,7 @@ class tx_simplemvc_abstractcontroller {
 	 * @return boolean
 	 */
 	public function getReCaptchaFields() {
+		/** @noinspection PhpIncludeInspection */
 		require_once(t3lib_extMgm::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
 		$publicKey = $this->getConfigurationValue('simplemvc.reCaptcha.publicKey');
 		return recaptcha_get_html($publicKey);
@@ -452,6 +453,7 @@ class tx_simplemvc_abstractcontroller {
 	 * @return boolean
 	 */
 	public function isValidReCaptcha() {
+		/** @noinspection PhpIncludeInspection */
 		require_once(t3lib_extMgm::extPath('simplemvc') . 'lib/recaptcha/recaptchalib.php');
 		$privateKey = $this->getConfigurationValue('simplemvc.reCaptcha.privateKey');
 		$response = recaptcha_check_answer($privateKey,
@@ -531,7 +533,7 @@ class tx_simplemvc_abstractcontroller {
 	 * @param string $action
 	 * @return string
 	 */
-	protected function preprocessAction($action) {
+	protected function preprocessAction(/** @noinspection PhpUnusedParameterInspection */ $action) {
 		return '';
 	}
 
