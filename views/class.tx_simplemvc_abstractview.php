@@ -149,7 +149,7 @@ abstract class tx_simplemvc_abstractview {
 					}
 					if ($filePath) {
 						if ($entry['type'] == 'js') {
-							$this->addHeaderScript($filePath);
+							$this->addHeaderScript($filePath, $entry['footer']);
 						}
 						elseif ($entry['type'] == 'css') {
 							$this->addHeaderStyles($filePath, isset($entry['media']) ? $entry['media'] : '');
@@ -186,12 +186,18 @@ abstract class tx_simplemvc_abstractview {
 	 * Adds data from template to the page header.
 	 *
 	 * @param string $scriptPath
+	 * @param bool $toFooter
 	 * @return void
 	 */
-	protected function addHeaderScript($scriptPath) {
-		$GLOBALS['TSFE']->additionalHeaderData[$scriptPath] =
-			'<script src="' . htmlspecialchars($scriptPath) .
-			'" type="text/javascript"></script>';
+	protected function addHeaderScript($scriptPath, $toFooter = false) {
+		$html = '<script src="' . htmlspecialchars($scriptPath) . '" type="text/javascript"></script>';
+		if ($toFooter) {
+			$GLOBALS['TSFE']->additionalFooterData[$scriptPath] = $html;
+		}
+		else {
+			$GLOBALS['TSFE']->additionalHeaderData[$scriptPath] = $html;
+		}
+
 	}
 
 	/**

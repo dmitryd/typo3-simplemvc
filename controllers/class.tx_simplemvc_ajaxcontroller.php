@@ -25,7 +25,7 @@
 /**
  * [CLASS/FUNCTION INDEX of SCRIPT]
  *
- * $Id: class.tx_simplemvc_ajaxcontroller.php 36760 2011-08-17 14:53:34Z ddulepov $
+ * $Id: class.tx_simplemvc_ajaxcontroller.php 60585 2013-09-18 17:31:13Z ddulepov $
  */
 
 require_once(PATH_tslib . 'class.tslib_fe.php');
@@ -47,7 +47,7 @@ require_once(PATH_t3lib . 'class.t3lib_cs.php');
 class tx_simplemvc_ajaxcontroller extends tx_simplemvc_abstractcontroller {
 
 	/**
-	 * Configuration key (TS confogration of this controller).
+	 * Configuration key (TS configration of this controller).
 	 *
 	 * @var string
 	 */
@@ -62,8 +62,6 @@ class tx_simplemvc_ajaxcontroller extends tx_simplemvc_abstractcontroller {
 
 	/**
 	 * Creates an instance of this class.
-	 *
-	 * @return	void
 	 */
 	public function __construct() {
 		ob_start();
@@ -91,6 +89,7 @@ class tx_simplemvc_ajaxcontroller extends tx_simplemvc_abstractcontroller {
 	/**
 	 * Initializes TSFE object
 	 *
+	 * @throws Exception
 	 * @return void
 	 */
 	protected function initTSFE() {
@@ -109,6 +108,7 @@ class tx_simplemvc_ajaxcontroller extends tx_simplemvc_abstractcontroller {
 		$GLOBALS['TSFE']->getCompressedTCarray();
 		$GLOBALS['TSFE']->initTemplate();
 		$GLOBALS['TSFE']->getConfigArray();
+		$GLOBALS['TSFE']->settingLanguage();
 
 		// Set linkVars, absRefPrefix, etc
 		TSpagegen::pagegenInit();
@@ -190,5 +190,3 @@ class tx_simplemvc_ajaxcontroller extends tx_simplemvc_abstractcontroller {
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/simplemvc/controllers/class.tx_simplemvc_ajaxcontroller.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/simplemvc/controllers/class.tx_simplemvc_ajaxcontroller.php']);
 }
-
-?>
