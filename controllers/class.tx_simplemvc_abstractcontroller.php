@@ -304,10 +304,14 @@ class tx_simplemvc_abstractcontroller {
 	 * @return string
 	 */
 	public function getLL($index, $hsc = TRUE) {
-		$label = isset($this->languageLabels[$index]) ? $this->languageLabels[$index] : '';
-		if ($hsc) {
-			$label = htmlspecialchars($label);
+		$label = '';
+		if (isset($this->languageLabels[$index])) {
+			$label = is_array($this->languageLabels[$index]) ? $this->languageLabels[$index][0]['target'] : $this->languageLabels[$index];
+			if ($hsc) {
+				$label = htmlspecialchars($label);
+			}
 		}
+
 		return $label;
 	}
 
