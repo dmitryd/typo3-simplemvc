@@ -146,6 +146,15 @@ class tx_simplemvc_abstractcontroller {
 	}
 
 	/**
+	 * Obtains parameter prefix for links.
+	 *
+	 * @return string
+	 */
+	public function getParameterPrefix() {
+		return $this->parameterPrefix;
+	}
+
+	/**
 	 * Gets the content of the TS object.
 	 *
 	 * @param string $tsPath
