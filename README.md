@@ -1,5 +1,9 @@
 # SimpleMVC framework for TYPO3 CMS
 
+**WARNING** This extension is obsolete and will not be updated anymore. You are encouranged to use Extbase and TYPO3 >= 6.2.
+
+---
+
 This is a TYPO3 "simplemvc" extension. It adds a simple high performance MVC framework to TYPO3.
 
 The extension allows you to have a full MVC stack without using any heavy overheads or obsolete methods. The goals of this project are:
