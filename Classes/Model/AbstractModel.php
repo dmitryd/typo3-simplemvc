@@ -816,7 +816,7 @@ abstract class AbstractModel {
 		if ($hasUnderscore) {
 			$methodName = substr($methodName, 1);
 		}
-		$attributeName = preg_replace('/[A-Z]/e', 'tx_simplemvc_model_convertForName(\'\\0\')', $methodName);
+		$attributeName = preg_replace_callback('/[A-Z]/', array(get_class($this), 'tx_simplemvc_model_convertForName'), $methodName);
 		if (!$hasUnderscore) {
 			$attributeName = substr($attributeName, 1);
 		}
@@ -923,42 +923,44 @@ abstract class AbstractModel {
 
 		$this->currentRow[$attributeName] = $attributeValue;
 	}
+
+
+	/**
+	* Fastest possible way to map capital letters to normal ones.
+	*
+	* @param string $match
+	* @return string
+	*/
+	public function tx_simplemvc_model_convertForName($match) {
+		static $map = array(
+			'A' => 'a',
+			'B' => 'b',
+			'C' => 'c',
+			'D' => 'd',
+			'E' => 'e',
+			'F' => 'f',
+			'G' => 'g',
+			'H' => 'h',
+			'I' => 'i',
+			'J' => 'j',
+			'K' => 'k',
+			'L' => 'l',
+			'M' => 'm',
+			'N' => 'n',
+			'O' => 'o',
+			'P' => 'p',
+			'Q' => 'q',
+			'R' => 'r',
+			'S' => 's',
+			'T' => 't',
+			'U' => 'u',
+			'V' => 'v',
+			'W' => 'w',
+			'X' => 'x',
+			'Y' => 'y',
+			'Z' => 'z',
+		);
+		return '_' . $map[$match{0}];
+	}
 }
 
-/**
- * Fastest possible way to map capital letters to normal ones.
- *
- * @param string $match
- * @return string
- */
-function tx_simplemvc_model_convertForName($match) {
-	static $map = array(
-		'A' => 'a',
-		'B' => 'b',
-		'C' => 'c',
-		'D' => 'd',
-		'E' => 'e',
-		'F' => 'f',
-		'G' => 'g',
-		'H' => 'h',
-		'I' => 'i',
-		'J' => 'j',
-		'K' => 'k',
-		'L' => 'l',
-		'M' => 'm',
-		'N' => 'n',
-		'O' => 'o',
-		'P' => 'p',
-		'Q' => 'q',
-		'R' => 'r',
-		'S' => 's',
-		'T' => 't',
-		'U' => 'u',
-		'V' => 'v',
-		'W' => 'w',
-		'X' => 'x',
-		'Y' => 'y',
-		'Z' => 'z',
-	);
-	return '_' . $map[$match{0}];
-}
