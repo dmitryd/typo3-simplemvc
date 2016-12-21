@@ -303,7 +303,11 @@ abstract class AbstractModel {
 	 * @param string $alias
 	 * @return string
 	 */
-	static public function enableFields($tableName, $alias = '') {
+	static public function enableFields($tableName = '', $alias = '') {
+		if ($tableName == '') {
+			// Get table name from the class
+			$tableName = self::getTableName();
+		}
 		if (TYPO3_MODE == 'BE') {
 			$enableFields = \TYPO3\CMS\Backend\Utility\BackendUtility::BEenableFields($tableName) .
 				\TYPO3\CMS\Backend\Utility\BackendUtility::deleteClause($tableName);
@@ -326,7 +330,11 @@ abstract class AbstractModel {
 	 * @param string $alias
 	 * @return string
 	 */
-	static public function enableFieldsClean($tableName, $alias = '') {
+	static public function enableFieldsClean($tableName = '', $alias = '') {
+		if ($tableName == '') {
+			// Get table name from the class
+			$tableName = self::getTableName();
+		}
 		$enableFields = trim(self::enableFields($tableName, $alias));
 		if ($enableFields) {
 			$enableFields = trim(substr($enableFields, 3));
@@ -830,7 +838,11 @@ abstract class AbstractModel {
 	 * @param string $tableName
 	 * @return string
 	 */
-	static protected function getSortingForTable($tableName) {
+	static protected function getSortingForTable($tableName = '') {
+		if ($tableName == '') {
+			// Get table name from the class
+			$tableName = self::getTableName();
+		}
 		$sorting = '';
 		if (isset($GLOBALS['TCA'][$tableName]['ctrl']['default_sortby'])) {
 			$sorting = substr($GLOBALS['TCA'][$tableName]['ctrl']['default_sortby'], 9);
